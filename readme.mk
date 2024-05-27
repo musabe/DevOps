@@ -1,38 +1,33 @@
-sudo useradd --no-create-home --shell /bin/false prometheus
-sudo mkdir /etc/prometheus
-sudo mkdir /var/lib/prometheus
-sudo chown prometheus:prometheus /etc/prometheus /var/lib/prometheus
+# DevOps Setup with 5 Ubuntu VMs
 
-wget https://github.com/prometheus/prometheus/releases/download/v2.29.1/prometheus-2.29.1.linux-amd64.tar.gz
-tar xvf prometheus-2.29.1.linux-amd64.tar.gz
-sudo cp prometheus-2.29.1.linux-amd64/prometheus /usr/local/bin/
-sudo cp prometheus-2.29.1.linux-amd64/promtool /usr/local/bin/
-sudo chown prometheus:prometheus /usr/local/bin/prometheus /usr/local/bin/promtool
+## Overview
+This guide provides steps to set up a DevOps environment using 5 Ubuntu VMs. Each VM is designated for a specific purpose within the DevOps lifecycle: Continuous Integration/Continuous Deployment (CI/CD), monitoring, logging, configuration management, and container orchestration.
 
-sudo cp -r prometheus-2.29.1.linux-amd64/consoles /etc/prometheus
-sudo cp -r prometheus-2.29.1.linux-amd64/console_libraries /etc/prometheus
-sudo chown -R prometheus:prometheus /etc/prometheus/consoles /etc/prometheus/console_libraries
+## Prerequisites
+- 5 Ubuntu VMs (version 20.04 or later recommended)
+- SSH access to each VM
+- Basic understanding of Linux command-line operations
 
-sudo nano /etc/prometheus/prometheus.yml
-# Add your Prometheus configuration here
+## VM Designation
+1. **CI/CD Server**: Runs Jenkins
+2. **Monitoring Server**: Runs Prometheus and Grafana
+3. **Logging Server**: Runs ELK stack (Elasticsearch, Logstash, Kibana)
+4. **Configuration Management Server**: Runs Ansible
+5. **Container Orchestration Server**: Runs Kubernetes (K8s)
 
-sudo tee /etc/systemd/system/prometheus.service > /dev/null <<EOL
-[Unit]
-Description=Prometheus
-Wants=network-online.target
-After=network-online.target
+## Setup Steps
 
-[Service]
-User=prometheus
-Group=prometheus
-Type=simple
-ExecStart=/usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/
+### 1. CI/CD Server (Jenkins)
+**VM Name:** `ci-cd-server`
 
-[Install]
-WantedBy=multi-user.target
-EOL
-
-sudo systemctl daemon-reload
-sudo systemctl start prometheus
-sudo systemctl enable prometheus
+#### Install Jenkins
+```bash
+sudo apt update
+sudo apt install -y openjdk-11-jdk
+wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo apt update
+sudo apt install -y jenkins
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
 
